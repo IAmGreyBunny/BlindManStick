@@ -45,7 +45,5 @@ int UltrasonicSensor::scanDistance()
   duration = pulseIn(echo,HIGH);
   distance = duration/58;
 
-
-
   return distance;
 }
