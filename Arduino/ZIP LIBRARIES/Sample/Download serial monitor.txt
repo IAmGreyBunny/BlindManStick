@@ -1,0 +1,38 @@
+Starting...
+--- Reset ESP8266 ---
+AT+RST
+
+ERROR
+--- Put it into mode 1 i.e. STA only ---
+AT+CWMODE=1
+
+OK
+--- Make it join hotspot / AP ---
+AT+CWJAP="AndroidAP","sp470819"
+WIFI DISCONNECT
+WIFI CONNECTED
+WIFI GOT IP
+--- Establish single connection ---
+AT+CIPMUX=0
+busy p...
+
+OK
+--- Make TCP connection ---
+AT+CIPSTART="TCP","184.106.153.149",80
+CONNECT
+
+OK
+--- Send data length & GET string ---
+AT+CIPSEND=40
+> 
+Recv 40 bytes
+
+SEND OK
+
++IPD,52:created_at,entry_id,field1
+2019-11-01T06:32:48Z,9,0
+CLOSED
+--- Actuator value from Thingspeak: ---
+0
+--- 0 => Turning off ---
+--- Close connection, wait a while before repeating... ---
