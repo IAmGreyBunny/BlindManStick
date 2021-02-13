@@ -25,15 +25,19 @@ void setup() {
 void loop() {
   //Gets distance from ultrasonic ranger
   horizontalDistance = horizontalUltrasonicSensor.scanDistance();
-
+  verticalDistance = verticalUltrasonicSensor.scanDistance();
+  
+  //Concatenate together a string to send through serial comms
+  String serialMessage = String(horizontalDistance) + ","+String(verticalDistance);
+  
   //Checks for distance and turn on motor when necessary
   if(horizontalDistance<40){
     vibrator.motorOn();
   }else if(horizontalDistance>=40){
     vibrator.motorOff();
   }
-
-  Serial.print(horizontalDistance);
+  
+  Serial.print(serialMessage);
   Serial.println();
   delay(500);
 }
