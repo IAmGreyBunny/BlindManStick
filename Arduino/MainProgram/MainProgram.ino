@@ -1,10 +1,12 @@
 #include <UltrasonicSensor.h> //Custom Library made for ultrasonic sensors
 #include <DCMotor.h>          //Custom Library made for DCMotor
+#include <Buzzer.h>
 
-//Ultrasonic sensor pins
+//IO Pins
 const int TRIG =8;
 const int ECHO =9;
 const int DCMOTOR = 4;
+const int BUZZER = 5;
 
 //Variable Declaration
 int horizontalDistance; //Distance from obstacle on the horizontal axis
@@ -17,6 +19,9 @@ UltrasonicSensor verticalUltrasonicSensor(TRIG,ECHO);
 //Create a DCMotor Object 
 DCMotor vibrator(DCMOTOR);
 
+//Create a Buzzer Object;
+Buzzer buzzer(BUZZER);
+
 void setup() {
   //Set baud rate to 9600 and start serial connection
   Serial.begin(9600);
@@ -28,7 +33,7 @@ void loop() {
   verticalDistance = verticalUltrasonicSensor.scanDistance();
   
   //Concatenate together a string to send through serial comms
-  String serialMessage = String(horizontalDistance) + ","+String(verticalDistance);
+  String serialMessage = String(horizontalDistance) + "," + String(verticalDistance);
   
   //Checks for distance and turn on motor when necessary
   if(horizontalDistance<40){
@@ -36,6 +41,17 @@ void loop() {
   }else if(horizontalDistance>=40){
     vibrator.motorOff();
   }
+
+  /*
+   * VERTICAL DISTANCE DETECTION
+  if(verticalDistance>5)
+  {
+    buzzer.onVertWarning();
+  }else if(verticalDistance<=5)
+  {
+    buzzer.offVertWarning();
+  }
+  */
   
   Serial.print(serialMessage);
   Serial.println();
