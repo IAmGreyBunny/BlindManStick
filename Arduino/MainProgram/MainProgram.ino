@@ -47,6 +47,17 @@ void loop() {
   
   //Concatenate together a string to send through serial comms
   String serialMessage = "Data,"+String(horizontalDistance) + "," + String(verticalDistance);
+  Serial.flush();
+  if(Serial.available()>0)
+  {
+    command = Serial.readStringUntil('\n');
+    command.trim();
+    if(command=="Setting,0,0,40,5,100")
+    {
+      buzzer.onVertWarning();
+    }
+  }
+  
   
   //Horizontal distance detection
   if(disabledAxis.horizontal!=1)
@@ -72,13 +83,8 @@ void loop() {
     }
   }
   
-  //Check for setting changes
-  if(Serial.available()>0)
-  {
-    command = Serial.readStringUntil('\n');
-    command.trim();
-  }
+
   Serial.println(serialMessage);
   Serial.flush();
-  delay(1000);
+  delay(500);
 }
