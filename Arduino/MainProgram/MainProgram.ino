@@ -71,13 +71,14 @@ void loop() {
       buzzer.offVertWarning();
     }
   }
-  Serial.println(serialMessage);
-  Serial.flush();
+  
   //Check for setting changes
   if(Serial.available()>0)
   {
     command = Serial.readStringUntil('\n');
     command.trim();
   }
+  Serial.println(serialMessage);
+  Serial.flush();
   delay(1000);
 }

@@ -20,13 +20,23 @@ firebase = pyrebase.initialize_app(firebaseConfig)
 #create firebase database object
 db=firebase.database()
 
+json = db.get().val()
+
+disableHorizontal = db.child("Setting").child("DisableHorizontal").get().val()
+disableVertical = db.child("Setting").child("DisableVertical").get().val()
+horizontalWarningRange = db.child("Setting").child("HorizontalWarningRange").get().val()
+verticalWarningRange = db.child("Setting").child("VerticalWarningRange").get().val()
+vibrationStrength = db.child("Setting").child("VibrationStrength").get().val()
+
+setting = (str(disableHorizontal)+","+str(disableVertical)+","+str(horizontalWarningRange)+","+str(verticalWarningRange)+","+str(vibrationStrength))
+
 if __name__ == '__main__':
     ser = serial.Serial('/dev/ttyACM1',115200,timeout=1)
     ser.flush()
-
+    
     while True:
-        ser.flush()
         if ser.in_waiting>0:
+            ser.reset_input_buffer()
             line = ser.readline().decode('utf-8').rstrip()
             line = line.split(",")
             print(line)
