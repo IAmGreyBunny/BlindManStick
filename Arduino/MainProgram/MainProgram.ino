@@ -1,7 +1,6 @@
 #include <UltrasonicSensor.h> //Custom Library made for ultrasonic sensors
 #include <DCMotor.h>          //Custom Library made for DCMotor
 #include <Buzzer.h>           //Custom Library made for Buzzer
-#include <Setting.h>          //Custom Library made to store settings and edit
 
 //IO Pins
 const int TRIG =8;
@@ -23,13 +22,22 @@ DCMotor vibrator(DCMOTOR);
 //Create a Buzzer Object;
 Buzzer buzzer(BUZZER);
 
+//Settings
+struct DisabledAxis
+{
+  int horizontal=0;
+  int vertical=1;
+};
+int verticalWarningRange=5;
+int horizontalWarningRange=40;
+int vibrationStrength=100;
+struct DisabledAxis disabledAxis;
+String command;
+
 void setup() {
-  //Set baud rate to 9600 and start serial connection
-  Serial.begin(9600);
-  while(!Serial.available())
-  {
-  }
-  Serial.println("Setting Request");
+  //Set baud rate to 115200 and start serial connection
+  Serial.begin(115200);
+  
 }
 
 void loop() {
@@ -38,27 +46,38 @@ void loop() {
   verticalDistance = verticalUltrasonicSensor.scanDistance();
   
   //Concatenate together a string to send through serial comms
-  String serialMessage = String(horizontalDistance) + "," + String(verticalDistance);
-
-  //Checks for distance and turn on motor when necessary
-  if(horizontalDistance<40){
-    vibrator.motorOn();
-  }else if(horizontalDistance>=40){
-    vibrator.motorOff();
-  }
-
-  /*
-   * VERTICAL DISTANCE DETECTION
-  if(verticalDistance>5)
-  {
-    buzzer.onVertWarning();
-  }else if(verticalDistance<=5)
-  {
-    buzzer.offVertWarning();
-  }
-  */
+  String serialMessage = "Data,"+String(horizontalDistance) + "," + String(verticalDistance);
   
-  Serial.print(serialMessage);
-  Serial.println();
-  delay(500);
+  //Horizontal distance detection
+  if(disabledAxis.horizontal!=1)
+  {
+    //Checks for distance and turn on motor when necessary
+    if(horizontalDistance<40){
+      vibrator.motorOn();
+    }else if(horizontalDistance>=40){
+      vibrator.motorOff();
+    }
+  }
+  
+  //Vertical distance detection
+  if(disabledAxis.vertical!=1)
+  {
+    //Checks for distance and on buzzer when necessary
+    if(verticalDistance>5)
+    {
+      buzzer.onVertWarning();
+    }  else if(verticalDistance<=5)
+    {
+      buzzer.offVertWarning();
+    }
+  }
+  Serial.println(serialMessage);
+  Serial.flush();
+  //Check for setting changes
+  if(Serial.available()>0)
+  {
+    command = Serial.readStringUntil('\n');
+    command.trim();
+  }
+  delay(1000);
 }

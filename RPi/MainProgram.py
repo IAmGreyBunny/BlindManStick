@@ -1,5 +1,6 @@
 import serial
 import pyrebase
+import time
 
 #firebase config
 firebaseConfig = {
@@ -20,11 +21,18 @@ firebase = pyrebase.initialize_app(firebaseConfig)
 db=firebase.database()
 
 if __name__ == '__main__':
-    ser = serial.Serial('/dev/ttyACM1',9600,timeout=1)
+    ser = serial.Serial('/dev/ttyACM1',115200,timeout=1)
     ser.flush()
 
     while True:
+        ser.flush()
         if ser.in_waiting>0:
             line = ser.readline().decode('utf-8').rstrip()
+            line = line.split(",")
             print(line)
-            db.child("HorizontalDistance").set(line)
+            if(line[0]=="Data"):
+                db.child("Data").child("HorizontalDistance").set(line[1])
+                db.child("Data").child("VerticalDistance").set(line[2])
+            ser.write(b"Setting\n")
+            time.sleep(1)
+            
