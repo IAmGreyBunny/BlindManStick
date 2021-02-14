@@ -1,6 +1,7 @@
 #include <UltrasonicSensor.h> //Custom Library made for ultrasonic sensors
 #include <DCMotor.h>          //Custom Library made for DCMotor
-#include <Buzzer.h>
+#include <Buzzer.h>           //Custom Library made for Buzzer
+#include <Setting.h>          //Custom Library made to store settings and edit
 
 //IO Pins
 const int TRIG =8;
@@ -25,6 +26,10 @@ Buzzer buzzer(BUZZER);
 void setup() {
   //Set baud rate to 9600 and start serial connection
   Serial.begin(9600);
+  while(!Serial.available())
+  {
+  }
+  Serial.println("Setting Request");
 }
 
 void loop() {
@@ -34,7 +39,7 @@ void loop() {
   
   //Concatenate together a string to send through serial comms
   String serialMessage = String(horizontalDistance) + "," + String(verticalDistance);
-  
+
   //Checks for distance and turn on motor when necessary
   if(horizontalDistance<40){
     vibrator.motorOn();
