@@ -20,11 +20,13 @@ void DCMotor::setMotorPin(int pin)
 }
 
 //Function to turn motor on and off
-void DCMotor::motorOn()
+void DCMotor::motorOn(int percentage)
 {
-    digitalWrite(motorPin,HIGH);
+  int pwm;
+  pwm = (percentage/100)*255;
+  analogWrite(motorPin,pwm);
 }
 void DCMotor::motorOff()
 {
-    digitalWrite(motorPin,LOW);
+  analogWrite(motorPin,0);
 }

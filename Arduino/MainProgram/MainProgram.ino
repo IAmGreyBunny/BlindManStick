@@ -61,7 +61,7 @@ struct DisabledAxis
 };
 int verticalWarningRange=5;
 int horizontalWarningRange=40;
-int vibrationStrength=100;
+int vibrationStrength=100; //For Demo Purposes This Does Not Work Due To Pin Connection Not Being PWM
 struct DisabledAxis disabledAxis;
 String command;
 
@@ -124,7 +124,7 @@ void loop() {
     {
       //Checks for distance and turn on motor when necessary
       if(horizontalDistance<40){
-        vibrator.motorOn();
+        vibrator.motorOn(vibrationStrength);
         xObstacleCount++;
         Serial.println("HORIZONTAL WARNING");
       }else if(horizontalDistance>=40){

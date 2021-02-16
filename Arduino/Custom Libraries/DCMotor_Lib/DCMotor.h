@@ -14,6 +14,6 @@ class DCMotor
   void setMotorPin(int pin);
 
   //Functions to turn on and off motors
-  void motorOn();
+  void motorOn(int percentage);
   void motorOff();
 };
