@@ -119,11 +119,11 @@ void loop() {
   if(disabledAxis.horizontal!=1)
   {
     //Checks for distance and turn on motor when necessary
-    if(horizontalDistance<40){
+    if(horizontalDistance<horizontalWarningRange){
       vibrator.motorOn(vibrationStrength);
       xObstacleCount++;
       Serial.println(F("HORIZONTAL WARNING"));
-    }else if(horizontalDistance>=40){
+    }else{
       vibrator.motorOff();
     }
   }
@@ -132,12 +132,12 @@ void loop() {
   if(disabledAxis.vertical!=1)
   {
     //Checks for distance and on buzzer when necessary
-    if(verticalDistance>5)
+    if(verticalDistance>verticalWarningRange)
     {
-      //buzzer.onVertWarning();
+      buzzer.onVertWarning(buzzerFrequency);
       yObstacleCount++;
       Serial.println(F("VERTICAL WARNING"));
-    }else if(verticalDistance<=5)
+    }else
     {
       buzzer.offVertWarning();
     }

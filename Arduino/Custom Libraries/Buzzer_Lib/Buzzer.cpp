@@ -19,9 +19,9 @@ void Buzzer::setBuzzerPin(int pin)
 }
 
 //Functions to play various sounds
-void Buzzer::onVertWarning()
+void Buzzer::onVertWarning(int frequency)
 {
-  tone(buzzerPin,500);
+  tone(buzzerPin,frequency);
 }
 void Buzzer::offVertWarning()
 {

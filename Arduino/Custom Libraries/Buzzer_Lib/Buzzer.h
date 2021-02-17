@@ -14,6 +14,6 @@ class Buzzer
   void setBuzzerPin(int pin);
 
   //Functions
-  void onVertWarning();
+  void onVertWarning(int frequency);
   void offVertWarning();
 };
