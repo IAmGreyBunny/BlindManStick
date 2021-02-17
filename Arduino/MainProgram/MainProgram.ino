@@ -164,7 +164,6 @@ void loop() {
     Serial.print(F("BufferArray:"));
     Serial.println(bufferArray);
     parseThingSpeakInput(bufferArray);
-    command = "done";
     Serial.println(command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency));
     
     if(loopCount>=30)
@@ -198,6 +197,10 @@ void parseThingSpeakInput(char input[])
   command = pch;
   for(int i = 0;pch!=NULL;i++)
   {
+    if(command == "done")
+    {
+      break;
+    }
     pch = strtok (NULL, " ,.-");
     switch(i)
     {
@@ -215,4 +218,5 @@ void parseThingSpeakInput(char input[])
         break;
     }
   }
+  command = "done";
 }
