@@ -3,6 +3,7 @@
 #include <Buzzer.h>           //Custom Library made for Buzzer
 #include <WiFiEsp.h>
 #include <ThingSpeak.h>
+#include <CuteBuzzerSounds.h>
 
 //IO Pins
 #define  TRIG 8
@@ -66,6 +67,7 @@ String command;
 char bufferArray[50];
 
 void setup() {
+  cute.init(BUZZER);
   //Initialise Pins
   pinMode(6,INPUT);
   //Set baud rate to 115200 and start serial connection
@@ -197,12 +199,12 @@ void loop() {
       xObstacleCount=0;
       yObstacleCount=0;
       loopCount=0;
-      buzzer.playSuccess();
+      cute.play(S_CONNECTION);
     }
     else{
       Serial.println("Problem updating channel. HTTP error code " + String(statusCode));
       loopCount=0;
-      buzzer.playFailure();
+      cute.play(S_SAD);
       }
     
   }
