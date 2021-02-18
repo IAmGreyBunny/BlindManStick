@@ -47,7 +47,7 @@ DCMotor vibrator(DCMOTOR);
 Buzzer buzzer(BUZZER);
 
 //Other Variables
-int loopCount =120;
+int loopCount =0;
 int xObstacleCount=0;
 int yObstacleCount=0;
 
@@ -63,7 +63,7 @@ byte vibrationStrength=100; //For Demo Purposes This Does Not Work Due To Pin Co
 int buzzerFrequency=500;
 struct DisabledAxis disabledAxis;
 String command;
-char bufferArray[35];
+char bufferArray[50];
 
 void setup() {
   //Initialise Pins
@@ -161,7 +161,7 @@ void loop() {
   }
   
 
-  if(buttonState==1||loopCount==120)
+  if(buttonState==1||loopCount==600||statusCode!=200)
   {
     //Write ThingSpeak
     ThingSpeak.setField(1, xObstacleCount);
@@ -171,42 +171,40 @@ void loop() {
     statusCode = ThingSpeak.getLastReadStatus();
     if(statusCode == 200){
       Serial.println("200");
+      //Manipulation of String in Char Array
+      Serial.print(F("ThingSpeak Input:"));
+      Serial.println(thingSpeakInput);
+      thingSpeakInput.toCharArray(bufferArray, 35);
+      Serial.print(F("BufferArray:"));
+      Serial.println(bufferArray);
+
+      //Check for new settings if any, and set to it
+      checkForNewSetting(bufferArray);
+      Serial.println(command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency)+","+String(horizontalWarningRange)+","+String(verticalWarningRange));
     }
     else{
       Serial.println("Problem reading channel. HTTP error code " + String(statusCode)); 
     }
 
-    //Manipulation of String in Char Array
-    Serial.print(F("ThingSpeak Input:"));
-    Serial.println(thingSpeakInput);
-    thingSpeakInput.toCharArray(bufferArray, 35);
-    Serial.print(F("BufferArray:"));
-    Serial.println(bufferArray);
-
-    //Check for new settings if any, and set to it
-    checkForNewSetting(bufferArray);
-    Serial.println(command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency));
-
     //Send new setting back to thingspeak and accompany it with an acknowledgement
-    ThingSpeak.setField(3,command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency));
+    ThingSpeak.setField(3,command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency)+","+String(horizontalWarningRange)+","+String(verticalWarningRange));
+   
     
-    if(loopCount>=30)
-    {
-      statusCode = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-      if(statusCode == 200){
-        Serial.println(F("Channel update successful."));
-        xObstacleCount=0;
-        yObstacleCount=0;
-        loopCount=0;
-      }
-      else{
-        Serial.println("Problem updating channel. HTTP error code " + String(statusCode));
-        loopCount=0;
-      }
-    }else
-    {
-      Serial.println(F("Not Enough Time In Between For Update"));
+    
+    statusCode = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+    if(statusCode == 200){
+      Serial.println(F("Channel update successful."));
+      xObstacleCount=0;
+      yObstacleCount=0;
+      loopCount=0;
+      buzzer.playSuccess();
     }
+    else{
+      Serial.println("Problem updating channel. HTTP error code " + String(statusCode));
+      loopCount=0;
+      buzzer.playFailure();
+      }
+    
   }
 
 
@@ -243,6 +241,12 @@ void checkForNewSetting(char input[])
       case 3:
         buzzerFrequency = atoi(pch);
         break;
+      case 4:
+        horizontalWarningRange = atoi(pch);
+        break;
+      case 5:
+        verticalWarningRange = atoi(pch);
+        break;
     }
   }
   command = "done";
@@ -270,6 +274,12 @@ void initialSet(char input[])
         break;
       case 3:
         buzzerFrequency = atoi(pch);
+        break;
+      case 4:
+        horizontalWarningRange = atoi(pch);
+        break;
+      case 5:
+        verticalWarningRange = atoi(pch);
         break;
     }
   }

@@ -27,3 +27,19 @@ void Buzzer::offVertWarning()
 {
   noTone(buzzerPin);
 }
+void Buzzer::playSuccess()
+{
+tone(buzzerPin,3000,250);
+  delay(250*1.30);
+  tone(buzzerPin,250,250);
+  delay(250*1.30);
+  noTone(buzzerPin);
+}
+void Buzzer::playFailure()
+{
+  tone(buzzerPin,250,250);
+  delay(250*1.30);
+  tone(buzzerPin,3000,250);
+  delay(250*1.30);
+  noTone(buzzerPin);
+}
