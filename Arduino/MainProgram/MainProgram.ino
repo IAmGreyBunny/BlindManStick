@@ -30,6 +30,7 @@ const char * myWriteAPIKey = "4UJ6VYPFY8NLSA4D";
 const char * myReadAPIKey = "5AUO5PHME5UIQKRV";
 int statusCode; //For debugging errors
 int field[8] = {1,2,3,4,5,6,7,8};
+String thingSpeakInput;
 
 //Variable Declaration
 byte horizontalDistance; //Distance from obstacle on the horizontal axis
@@ -46,7 +47,7 @@ DCMotor vibrator(DCMOTOR);
 Buzzer buzzer(BUZZER);
 
 //Other Variables
-int loopCount =30;
+int loopCount =120;
 int xObstacleCount=0;
 int yObstacleCount=0;
 
@@ -89,9 +90,31 @@ void setup() {
     // Connect to WPA/WPA2 network
     status = WiFi.begin(ssid, pass);
   }
-
   Serial.println("You're connected to the network");
+
+  //Initialise Thingspeak
   ThingSpeak.begin(client); 
+
+  //Get Initial Setting From Thing Speak
+  thingSpeakInput = ThingSpeak.readStringField(myChannelNumber, 3);
+  statusCode = ThingSpeak.getLastReadStatus();
+  if(statusCode == 200){
+    Serial.println(F("Connection Successful"));
+
+    //Manipulation of String in Char Array
+    Serial.print(F("ThingSpeak Input:"));
+    Serial.println(thingSpeakInput);
+    thingSpeakInput.toCharArray(bufferArray, 35);
+    Serial.print(F("BufferArray:"));
+    Serial.println(bufferArray);
+    
+    //Set Initial Settings
+    initialSet(bufferArray); 
+  }
+  else{
+    Serial.println("Problem reading channel. HTTP error code " + String(statusCode)); 
+  }
+  
 }
 
 void loop() {
@@ -116,36 +139,30 @@ void loop() {
   verticalDistance = verticalUltrasonicSensor.scanDistance();
   
   //Horizontal distance detection
-  if(disabledAxis.horizontal!=1)
+  if(disabledAxis.horizontal!=1&&horizontalDistance<horizontalWarningRange)
   {
-    //Checks for distance and turn on motor when necessary
-    if(horizontalDistance<horizontalWarningRange){
       vibrator.motorOn(vibrationStrength);
       xObstacleCount++;
       Serial.println(F("HORIZONTAL WARNING"));
-    }else{
-      vibrator.motorOff();
-    }
+  }else{
+    vibrator.motorOff();
   }
   
+  
   //Vertical distance detection
-  if(disabledAxis.vertical!=1)
+  if(disabledAxis.vertical!=1&&verticalDistance>verticalWarningRange)
   {
-    //Checks for distance and on buzzer when necessary
-    if(verticalDistance>verticalWarningRange)
-    {
-      buzzer.onVertWarning(buzzerFrequency);
-      yObstacleCount++;
-      Serial.println(F("VERTICAL WARNING"));
-    }else
-    {
-      buzzer.offVertWarning();
-    }
+    buzzer.onVertWarning(buzzerFrequency);
+    yObstacleCount++;
+    Serial.println(F("VERTICAL WARNING"));
+  }else
+  {
+    buzzer.offVertWarning();
   }
+  
 
   if(buttonState==1||loopCount==120)
   {
-    String thingSpeakInput;
     //Write ThingSpeak
     ThingSpeak.setField(1, xObstacleCount);
     ThingSpeak.setField(2, yObstacleCount);
@@ -158,13 +175,20 @@ void loop() {
     else{
       Serial.println("Problem reading channel. HTTP error code " + String(statusCode)); 
     }
+
+    //Manipulation of String in Char Array
     Serial.print(F("ThingSpeak Input:"));
     Serial.println(thingSpeakInput);
     thingSpeakInput.toCharArray(bufferArray, 35);
     Serial.print(F("BufferArray:"));
     Serial.println(bufferArray);
-    parseThingSpeakInput(bufferArray);
+
+    //Check for new settings if any, and set to it
+    checkForNewSetting(bufferArray);
     Serial.println(command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency));
+
+    //Send new setting back to thingspeak and accompany it with an acknowledgement
+    ThingSpeak.setField(3,command+","+String(disabledAxis.horizontal)+","+String(disabledAxis.vertical)+","+String(vibrationStrength)+","+String(buzzerFrequency));
     
     if(loopCount>=30)
     {
@@ -185,12 +209,14 @@ void loop() {
     }
   }
 
+
   loopCount+=1;
   delay(500);
   
 }
 
-void parseThingSpeakInput(char input[])
+//Check for new setting andd set if any
+void checkForNewSetting(char input[])
 {
   char * pch;
   pch = strtok (input,"\",.-");
@@ -199,8 +225,37 @@ void parseThingSpeakInput(char input[])
   {
     if(command == "done")
     {
+      Serial.println(F("No New Command"));
       break;
     }
+    pch = strtok (NULL, " ,.-");
+    switch(i)
+    {
+      case 0:
+        disabledAxis.horizontal = atoi(pch);
+        break;
+      case 1:
+        disabledAxis.vertical = atoi(pch);
+        break;
+      case 2:
+        vibrationStrength = atoi(pch);
+        break;
+      case 3:
+        buzzerFrequency = atoi(pch);
+        break;
+    }
+  }
+  command = "done";
+}
+
+//Initial Settings
+void initialSet(char input[])
+{
+  char * pch;
+  pch = strtok (input,"\",.-");
+  command = pch;
+  for(int i = 0;pch!=NULL;i++)
+  {
     pch = strtok (NULL, " ,.-");
     switch(i)
     {
